@@ -1,0 +1,25 @@
+# secrets
+.env
+.claude/
+# data and caches (rebuilt from the raw datasets; see README)
+data_raw/
+**/cache/
+model/artifacts/
+*.parquet
+*.pkl
+*.npz
+*.npy
+*.jsonl
+eda/*.csv
+eda/*.json
+eda/build_notebook.py.out
+# logs, backups, build outputs
+*.log
+*.bak.py
+*.bak.*
+__pycache__/
+d2/final/page*.png
+d2/D2_team_pack.new.zip
+eda/profiles/steam_my_library.md
+d2/final/page*.png
+d2/final/page_contact.png

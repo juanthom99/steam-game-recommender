@@ -1,0 +1,20 @@
+{
+  "median_hours_McAuley 2017": 3.5,
+  "median_hours_Steam 2026": 3.5,
+  "median_hours_Kaggle (to 2023)": 27.8,
+  "median_library_McAuley 2017": 29,
+  "median_library_Steam 2026": 232,
+  "top1pct_share_McAuley 2017": 34.9,
+  "top1pct_share_Steam 2026": 14.6,
+  "top1pct_share_Kaggle (to 2023)": 55.7,
+  "label_pos_bottom_top_Steam 2026": [
+    49.9,
+    88.0
+  ],
+  "label_pos_bottom_top_Kaggle (to 2023)": [
+    65.9,
+    90.7
+  ],
+  "refund_positive_pct": 28.5,
+  "all_reviews_positive_pct": 75.6
+}

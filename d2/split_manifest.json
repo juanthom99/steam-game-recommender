@@ -1,0 +1,43 @@
+{
+  "created": "2026-11-02 16:20",
+  "rule": "Reserve the final test set and the validation set (eval/PROTOCOL.md, decision 1). Run once; the result is fixed.\n\nUnit: a player within a source (mcauley 2017 libraries, steam2026 libraries, kaggle reviewers).\n  bucket = sha256(\"steamrec-split-v1|<source>|<player>\") mod 10\n  0 -> test, 1 -> validation, 2-9 -> train\nPlayers already looked at (the 2,400 from the first offline check, and the label pilot players) can never be test:\nif they land in bucket 0 they move to validation.\nInside test and validation players, each played game is hidden with\n  sha256(\"steamrec-split-v1|<source>|<player>|<app_id>\") mod 5 == 0   (about 20%)\nso every model is scored on exactly the same hidden games.",
+  "seed_string": "steamrec-split-v1",
+  "moved_from_test_to_validation_already_seen": 534,
+  "counts": {
+    "kaggle/test": {
+      "players": 1368763,
+      "eligible_5plus": 111930,
+      "small_1to4": 216773
+    },
+    "kaggle/validation": {
+      "players": 1367004,
+      "eligible_5plus": 111178,
+      "small_1to4": 216704
+    },
+    "mcauley/test": {
+      "players": 6265,
+      "eligible_5plus": 5002,
+      "small_1to4": 465
+    },
+    "mcauley/validation": {
+      "players": 7377,
+      "eligible_5plus": 6099,
+      "small_1to4": 455
+    },
+    "steam2026/test": {
+      "players": 187,
+      "eligible_5plus": 184,
+      "small_1to4": 3
+    },
+    "steam2026/validation": {
+      "players": 308,
+      "eligible_5plus": 308,
+      "small_1to4": 0
+    }
+  },
+  "files": {
+    "players.parquet": "187eb0c25222054081b8127b82ff4bc11524534a75cc68283ddd2da72f594367",
+    "hidden_games.parquet": "798d6717f71493df51453a495271760dbda069b20b90d5e0707857727d42bcf6"
+  },
+  "note": "Test players must be excluded from every model's training data. Test is scored once, at the end."
+}

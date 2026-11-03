@@ -1,0 +1,101 @@
+column,type,% missing,example,description,table
+app_id,int64,0.0,3255380,Steam app id (primary key; joins every table),games.parquet
+title,string,0.0,LUNAR Remastered Collection,"Display title, HTML entities decoded, hidden characters removed",games.parquet
+release_date,timestamp[us],1.6,2025-07-03 00:00:00,"Release date (Kaggle, else Fronkon)",games.parquet
+win,bool,63.1,True,Runs on Windows,games.parquet
+mac,bool,1.6,False,Runs on macOS,games.parquet
+linux,bool,1.6,False,Runs on Linux,games.parquet
+rating,string,63.1,Positive,"Steam review summary label (Kaggle 2023, e.g. 'Very Positive')",games.parquet
+positive_ratio,double,29.8,71.0,% positive Steam reviews (Kaggle 2023),games.parquet
+user_reviews,double,1.6,0.0,Number of Steam reviews (Kaggle 2023),games.parquet
+steam_deck,bool,63.1,True,Steam Deck verified flag (Kaggle),games.parquet
+description,string,14.5,Experience the thrill of being a bus dri,"Short store description (Kaggle, else Fronkon, else Steam backfill)",games.parquet
+tags,list<element: string>,0.0,[],"Steam user tags, most-voted first (empty list for 66% of recommendable games: the FronkonGames copy has no tags)",games.parquet
+title_raw,string,0.0,LUNAR Remastered Collection,Title before cleaning (audit trail),games.parquet
+title_norm,string,0.0,lunar remastered collection,"Lower-case title without punctuation/edition words, for matching",games.parquet
+kaggle_price_regular,double,63.1,0.0,Regular USD price in Kaggle (2023),games.parquet
+kaggle_price_final,double,63.1,0.0,"Price paid at Kaggle crawl time, after discount",games.parquet
+price_original_was_missing,bool,63.1,False,Kaggle listed regular price 0 on a paid game (rule G3),games.parquet
+kaggle_discount,double,63.1,0.0,Kaggle discount %,games.parquet
+description_source,string,0.0,fronkon,Where the description came from (kaggle / fronkon / steam / none),games.parquet
+n_tags,int64,0.0,0,Number of tags,games.parquet
+steam_name,string,65.8,Bitburner,Name in Steam's app list,games.parquet
+steam_last_modified,timestamp[us],65.8,2026-09-15 16:25:45,Steam app list last-modified time,games.parquet
+item_type,string,0.0,game,"game, dlc, demo, tool, software, video, music, mod, episode, playtest, removed, unknown",games.parquet
+delisted,bool,0.0,False,"Store page no longer exists (kept for history, never recommended)",games.parquet
+dup_title,bool,0.0,False,"Shares a normalized title with another app (remasters, regional editions)",games.parquet
+developer,string,89.2,Indie Games Studio,Developer (McAuley),games.parquet
+publisher,string,89.7,EuroVideo Medien,Publisher (McAuley),games.parquet
+specs,list<element: string>,88.3,"['Single-player', 'Multi-player', 'Co-op","Store features from McAuley (co-op, controller...)",games.parquet
+early_access,bool,88.2,False,Early Access flag (McAuley),games.parquet
+mc_genres,list<element: string>,89.1,['Casual'],Genres from McAuley,games.parquet
+catalog_source,string,0.0,fronkon,Which dataset the row came from (kaggle / fronkon / mcauley),games.parquet
+genres,list<element: string>,9.9,"['Adventure', 'Casual', 'Indie']",Store genres (Fronkon),games.parquet
+categories,list<element: string>,9.9,"['Single-player', 'Family Sharing']",Store categories (Fronkon),games.parquet
+f_developers,list<element: string>,9.9,['ZERO5GAMES'],Developers (Fronkon),games.parquet
+f_publishers,list<element: string>,9.9,['ZERO5GAMES'],Publishers (Fronkon),games.parquet
+header_image,string,9.9,https://shared.akamai.steamstatic.com/st,Store header image URL,games.parquet
+steamspy_median_playtime_min,double,81.0,7.0,"SteamSpy median lifetime playtime, minutes (null = unknown, rule F1)",games.parquet
+steamspy_avg_playtime_min,double,81.0,7.0,"SteamSpy average lifetime playtime, minutes",games.parquet
+steam_positive,double,9.9,90.0,"Positive reviews (Fronkon, Oct 2026)",games.parquet
+steam_negative,double,9.9,19.0,"Negative reviews (Fronkon, Oct 2026)",games.parquet
+owners_lo,double,9.9,0.0,"Estimated owners, low end of SteamSpy band",games.parquet
+owners_hi,double,9.9,20000.0,"Estimated owners, high end",games.parquet
+fronkon_price,double,9.9,0.99,Price at Fronkon crawl (can be a sale price),games.parquet
+peak_ccu,double,9.9,0.0,Peak concurrent players (Fronkon),games.parquet
+achievements,double,9.9,0.0,Number of achievements,games.parquet
+adult,bool,0.0,False,Sexually explicit content (rule G17); excluded from recommendations,games.parquet
+mature_18,bool,0.0,False,Steam 18+ age gate (mostly violence); not filtered,games.parquet
+price_regular,double,1.6,0.0,Regular USD price: higher of Kaggle 2023 regular and Fronkon 2026 when both exist (rule G18); Fronkon-only games are re-priced from SteamSpy by clean/merge_steamspy.py,games.parquet
+price_source,string,0.0,fronkon_2026_only,kaggle_2023_higher / fronkon_2026 / fronkon_2026_only (not yet cross-checked) / kaggle_2023 / none,games.parquet
+desc_short,bool,0.0,False,Description under 40 characters,games.parquet
+desc_shared,bool,0.0,False,Description shared by several apps,games.parquet
+desc_non_english,bool,0.0,False,Description mostly non-Latin script,games.parquet
+history_ok,bool,0.0,True,Counts as play history (game/unknown/removed/mod/demo/episode),games.parquet
+recommendable,bool,0.0,True,"Candidate for recommendations: game, on sale, released, not adult, has store data",games.parquet
+source,string,0.0,mcauley,Always 'mcauley',interactions_mcauley.parquet
+user_key,int64,0.0,100053657,Integer player id (map in users_mcauley_map),interactions_mcauley.parquet
+app_id,int32,0.0,420,Steam app id,interactions_mcauley.parquet
+playtime_min,int32,0.0,34,"Lifetime playtime, minutes, at crawl time",interactions_mcauley.parquet
+playtime_2w_min,int32,0.0,0,"Playtime in the 2 weeks before the crawl, minutes",interactions_mcauley.parquet
+played,bool,0.0,True,"playtime_min > 0 (unplayed rows are 'unknown', not dislikes)",interactions_mcauley.parquet
+censored,bool,0.0,False,Playtime hit a cap (always False here),interactions_mcauley.parquet
+is_game,bool,0.0,True,App is a game (not DLC/tool/removed),interactions_mcauley.parquet
+item_type,string,0.0,game,App type from the catalog,interactions_mcauley.parquet
+history_ok,bool,0.0,True,App counts as play history,interactions_mcauley.parquet
+review_recommend,bool,99.1,True,"Thumbs up (True) / down (False) if this player reviewed this game, else null",interactions_mcauley.parquet
+review_date,timestamp[us],99.1,2014-11-27 00:00:00,Review date,interactions_mcauley.parquet
+helpful,int32,100.0,None,Helpful votes on the review,interactions_mcauley.parquet
+funny,int32,100.0,None,Funny votes on the review,interactions_mcauley.parquet
+source,string,0.0,kaggle,Always 'kaggle',interactions_kaggle.parquet
+user_key,int64,0.0,13596,Kaggle user id,interactions_kaggle.parquet
+app_id,int32,0.0,739630,Steam app id,interactions_kaggle.parquet
+playtime_min,int32,0.0,1182,"Hours at review time x 60 (export caps at 1,000 h)",interactions_kaggle.parquet
+playtime_2w_min,int32,100.0,None,Not available (0),interactions_kaggle.parquet
+played,bool,0.0,True,playtime_min > 0,interactions_kaggle.parquet
+censored,bool,0.0,False,"Hit the 1,000 h cap (rule K4)",interactions_kaggle.parquet
+is_game,bool,0.0,True,App is a game,interactions_kaggle.parquet
+history_ok,bool,0.0,True,App counts as play history,interactions_kaggle.parquet
+bulk_user,bool,0.0,False,Bulk reviewer (rule K7),interactions_kaggle.parquet
+pre_release_review,bool,0.0,False,Review > 30 days before listed release (Early Access; rule K8),interactions_kaggle.parquet
+review_recommend,bool,0.0,True,Thumbs up / down,interactions_kaggle.parquet
+review_date,timestamp[us],0.0,2020-10-08 00:00:00,Review date,interactions_kaggle.parquet
+helpful,int32,0.0,2,Helpful votes,interactions_kaggle.parquet
+funny,int32,0.0,0,Funny votes,interactions_kaggle.parquet
+user_id,int64,0.0,3402481,Kaggle user id (= user_key),users_kaggle.parquet
+products,int64,0.0,13,"Apps owned per Kaggle (unreliable, rule U1)",users_kaggle.parquet
+reviews,int64,0.0,1,Reviews written on Steam,users_kaggle.parquet
+reviews_in_data,int32,0.0,1,Reviews present in this dataset,users_kaggle.parquet
+products_inconsistent,bool,0.0,False,0 products but has reviews,users_kaggle.parquet
+bulk_reviewer,bool,0.0,False,Bulk reviewer (rule K7),users_kaggle.parquet
+user_key,int64,0.0,100035456,Integer id used in interactions_mcauley,users_mcauley_map.parquet
+mc_user_id,string,0.0,76561198009000573,Original McAuley user id,users_mcauley_map.parquet
+n_owned,int64,0.0,206,Apps owned,users_mcauley_map.parquet
+n_played,int64,0.0,143,Apps with playtime > 0,users_mcauley_map.parquet
+n_played_hist,int64,0.0,141,Played apps that count as history,users_mcauley_map.parquet
+collector,bool,0.0,False,"Owns >= 3,000 apps",users_mcauley_map.parquet
+no_played,bool,0.0,False,Owns apps but played none,users_mcauley_map.parquet
+app_id,int64,0.0,4210130,Steam app id,steam_catalog_extra.parquet
+name,string,0.0,RAID VR,App name,steam_catalog_extra.parquet
+type,string,0.0,game,App type,steam_catalog_extra.parquet
+last_modified,timestamp[us],0.0,2026-02-13 10:38:43,Last modified on Steam,steam_catalog_extra.parquet

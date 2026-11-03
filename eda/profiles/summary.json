@@ -1,0 +1,128 @@
+[
+  {
+    "source": "Kaggle games.csv",
+    "grain": "game (Steam app)",
+    "rows": 50872,
+    "columns": 13,
+    "worst completeness": "Green",
+    "high issues": 0,
+    "medium issues": 1
+  },
+  {
+    "source": "Kaggle games_metadata.json",
+    "grain": "game",
+    "rows": 50872,
+    "columns": 3,
+    "worst completeness": "Green",
+    "high issues": 1,
+    "medium issues": 0
+  },
+  {
+    "source": "Kaggle users.csv",
+    "grain": "user",
+    "rows": 14306064,
+    "columns": 3,
+    "worst completeness": "Green",
+    "high issues": 0,
+    "medium issues": 1
+  },
+  {
+    "source": "Kaggle recommendations.csv",
+    "grain": "user review of a game",
+    "rows": 41154794,
+    "columns": 8,
+    "worst completeness": "Green",
+    "high issues": 0,
+    "medium issues": 2
+  },
+  {
+    "source": "Steam store appdetails (300-game sample)",
+    "grain": "game (live store page)",
+    "rows": 300,
+    "columns": 15,
+    "worst completeness": "Red",
+    "high issues": 5,
+    "medium issues": 2
+  },
+  {
+    "source": "Steam IStoreService app catalog",
+    "grain": "Steam app (any type)",
+    "rows": 264125,
+    "columns": 4,
+    "worst completeness": "Green",
+    "high issues": 1,
+    "medium issues": 0
+  },
+  {
+    "source": "Steam GetOwnedGames (your library)",
+    "grain": "owned game for one user",
+    "rows": 21,
+    "columns": 10,
+    "worst completeness": "Red",
+    "high issues": 1,
+    "medium issues": 0
+  },
+  {
+    "source": "IsThereAnyDeal overview + prices (300-game sample)",
+    "grain": "game (ITAD id) with current and historical-low price",
+    "rows": 277,
+    "columns": 10,
+    "worst completeness": "Orange",
+    "high issues": 0,
+    "medium issues": 4
+  },
+  {
+    "source": "FronkonGames steam-games-dataset",
+    "grain": "Steam game (store page + SteamSpy stats, Oct 2026)",
+    "rows": 124146,
+    "columns": 31,
+    "worst completeness": "Green",
+    "high issues": 1,
+    "medium issues": 18
+  },
+  {
+    "source": "McAuley australian_users_items (users)",
+    "grain": "Steam user",
+    "rows": 88310,
+    "columns": 4,
+    "worst completeness": "Green",
+    "high issues": 1,
+    "medium issues": 0
+  },
+  {
+    "source": "McAuley australian_users_items (owned games)",
+    "grain": "owned game for a user (full library)",
+    "rows": 5153209,
+    "columns": 5,
+    "worst completeness": "Green",
+    "high issues": 1,
+    "medium issues": 1
+  },
+  {
+    "source": "McAuley australian_user_reviews",
+    "grain": "user review of a game",
+    "rows": 59305,
+    "columns": 7,
+    "worst completeness": "Green",
+    "high issues": 2,
+    "medium issues": 0
+  },
+  {
+    "source": "McAuley steam_games (item metadata)",
+    "grain": "Steam app (2018 crawl)",
+    "rows": 32135,
+    "columns": 15,
+    "worst completeness": "Red",
+    "high issues": 6,
+    "medium issues": 5
+  },
+  {
+    "source": "McAuley bundle_data",
+    "grain": "Steam bundle",
+    "rows": 615,
+    "columns": 7,
+    "worst completeness": "Green",
+    "high issues": 0,
+    "medium issues": 0
+  }
+]

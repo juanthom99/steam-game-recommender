@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D2 Data Note: Steam Game Recommender</title>
+<style>
+  @page { size: Letter; margin: 0.5in 0.6in 0.5in 0.6in; }
+  body { font-family: "Segoe UI", Calibri, Arial, sans-serif; font-size: 9.3pt; line-height: 1.3; color: #1a1a1a; margin: 0; }
+  h1 { font-size: 15pt; margin: 0 0 1pt; }
+  .meta { color: #444; font-size: 8.4pt; margin-bottom: 6pt; border-bottom: 1px solid #ccc; padding-bottom: 4pt; }
+  h2 { font-size: 10.6pt; margin: 8pt 0 3pt; color: #0b3d6b; }
+  p { margin: 0 0 4pt; }
+  ul, ol { margin: 0 0 4pt; padding-left: 15pt; }
+  li { margin-bottom: 1.5pt; }
+  table { border-collapse: collapse; width: 100%; margin: 2pt 0 5pt; font-size: 8.3pt; line-height: 1.22; }
+  th, td { border-bottom: 1px solid #d9d9d9; padding: 2pt 4pt; text-align: left; vertical-align: top; }
+  th { background: #eef2f6; font-weight: 600; }
+  td.n, th.n { text-align: right; white-space: nowrap; }
+  code { font-family: Consolas, monospace; font-size: 8pt; background: #f3f3f3; padding: 0 1.5pt; }
+  .fn { font-size: 7.8pt; color: #555; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12pt; row-gap: 5pt; margin: 3pt 0 4pt; }
+  .fig img { width: 100%; display: block; }
+  .fig .cap { font-size: 8.1pt; line-height: 1.25; margin-top: 1pt; }
+  .box { border: 1px solid #d9d9d9; padding: 4pt 6pt; font-size: 8.1pt; line-height: 1.25; }
+  .box table { font-size: 7.9pt; margin: 2pt 0 0; }
+  a { color: #0b5cad; text-decoration: none; }
+  .avoid { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<h1>D2 Data Note: Steam Game Recommender</h1>
+<div class="meta">D2 Data preparation and EDA · November 2, 2026 ·
+Repository: <a href="(link pending)">(link pending)</a> (tag <code>d2-submission</code>, commit <code>pending</code>) ·
+Dashboard: <a href="https://juanthom99--steamrec-d2-dashboard-run.us-east.modal.run">juanthom99--steamrec-d2-dashboard-run.us-east.modal.run</a></div>
+
+<h2>1. Goal and data</h2>
+<p>The recommender takes a player's Steam library and suggests games they are likely to enjoy. Most players never review,
+so "enjoyed" has to come from behavior: how long someone played a game compared with that game's other players. Three
+sources supply that behavior; a fourth supplies the game catalog.</p>
+<table>
+<tr><th>Source</th><th>What it holds</th><th class="n">Players</th><th class="n">Played rows*</th><th>Role</th></tr>
+<tr><td>McAuley Australian Steam (2017)</td><td>Full libraries, played and unplayed</td><td class="n">68k</td><td class="n">3.2M</td><td>Primary training source and 2017-era evaluation (players differ from today's, Fig 2)</td></tr>
+<tr><td>Steam 2026 (our collection)</td><td>Public full libraries of recent reviewers, via Steam's official API</td><td class="n">2.4k</td><td class="n">1.4M</td><td>Modern players: own test slice and label re-test</td></tr>
+<tr><td>Kaggle Steam reviews (to Oct 2023)</td><td>Reviewed games only; hours at review time</td><td class="n">13.7M</td><td class="n">40.4M</td><td>Extra training rows and label validation</td></tr>
+<tr><td>FronkonGames Steam Games (Oct 2026)</td><td>124,146 games: genres, descriptions, prices</td><td class="n">—</td><td class="n">—</td><td>Catalog: 72,919 of 111,167 recommendable games, incl. all 38,637 released 2024–2026</td></tr>
+</table>
+<p class="fn">*Playtime above zero, app counts as play history, bulk reviewers excluded: the filter every model trains on
+(Kaggle: 40.4M of 41.15M cleaned rows). The merged catalog has 137,725 apps; 111,167 are recommendable (released, on
+sale, and passing our content filters, Section 2).</p>
+
+<h2>2. Audit and cleaning</h2>
+<p><code>clean/build_clean.py</code> rebuilds every table from the raw files and runs 21 validation checks; all pass.
+Examples: catalog <code>app_id</code> is unique; every interaction joins to the catalog; each (player, game) pair
+appears once per source; two-week playtime never exceeds lifetime playtime; no playtest, delisted or explicit game is
+recommendable. Every rule is logged with the rows it touched and why (<code>clean/cleaning_report.md</code>).</p>
+<ul>
+<li><b>Kaggle repair.</b> Duplicate reviews and two scripted accounts (identical hours on every game) were removed:
+under 0.0001% of 41.15M rows. Its playtime stops at 1,000 h, so 368 played rows at that ceiling are flagged as censored.
+Early Access reviews written before the listed release (2.85M) and bulk reviewers (230k rows) are kept but flagged.</li>
+<li><b>Keep, flag, don't delete.</b> Zero-playtime rows, DLC and delisted games stay, flagged: they still describe what a
+player owns. Zero playtime means unknown, not disliked (1.85M McAuley rows; 176k Kaggle reviews).</li>
+<li><b>Text and content.</b> HTML codes removed from 322 titles and 1,956 descriptions. Playtests (8,131), sexually
+explicit games (4,593) and delisted games are never recommended but count as play history.</li>
+<li><b>Price fix.</b> The October 2026 crawl often caught sale prices ($5.99 for a $59.99 game). Where both sources
+have a price, the regular price is now the higher one, which corrected 23,109 games (rule G18).</li>
+<li><b>Privacy.</b> Our 2026 collection stores only salted SHA-256 hashes of Steam IDs and no review text.</li>
+</ul>
+
+<h2>3. Data dictionary (summary)</h2>
+<p>The full dictionary (<code>clean/data_dictionary.md</code> / <code>.csv</code>) lists every column's type, missing
+rate, example and meaning. All tables join on <code>app_id</code>.</p>
+<table>
+<tr><th>Table</th><th>One row per</th><th class="n">Rows</th><th>Key columns</th></tr>
+<tr><td><code>interactions_kaggle</code></td><td>Player × reviewed game</td><td class="n">41,154,753</td><td><code>playtime_min</code> (at review, capped 1,000 h), <code>review_recommend</code> (validation only), <code>censored</code>, <code>bulk_user</code></td></tr>
+<tr><td><code>interactions_mcauley</code></td><td>Player × owned game</td><td class="n">5,094,082</td><td><code>playtime_min</code>, <code>playtime_2w_min</code>, <code>played</code> (False = unknown, not a dislike)</td></tr>
+<tr><td><code>games</code></td><td>Steam app (merged catalog)</td><td class="n">137,725</td><td><code>recommendable</code>, <code>history_ok</code>, <code>genres</code>, <code>tags</code>, <code>price_regular</code>, <code>price_source</code>, <code>adult</code></td></tr>
+<tr><td>Steam 2026 collection</td><td>Hashed player × library game; reviews</td><td class="n">2,696 libraries</td><td>playtime, achievements, review flag (no text)</td></tr>
+<tr><td><code>splits/</code></td><td>Player's split; hidden games</td><td class="n">—</td><td><code>split</code> (test / validation), SHA-256 checksums in <code>manifest.json</code></td></tr>
+</table>
+
+<div class="avoid"><h2>4. What the data shows</h2>
+<div class="grid">
+<div class="fig"><img src="figures/n1_playtime.png"><div class="cap"><b>Playtime spans five orders of magnitude.</b> The
+median played game gets 3.5 h in full libraries but 27.8 h in Kaggle, because people review games they played a lot.
+<i>Means:</i> raw hours can't be compared across games or sources, so the label ranks each player among the same game's
+players.</div></div>
+<div class="fig"><img src="figures/n2_library.png"><div class="cap"><b>Today's libraries are 8x larger</b> (median 232
+vs 29 played games). <i>Means:</i> a score tuned on 2017 players (0.727 AUC) lost to plain playtime on 2026 players
+(0.659 vs 0.693), so we use the simple within-game percentile and test 2026 players separately.</div></div>
+<div class="fig"><img src="figures/n3_popularity.png"><div class="cap"><b>A few games take most of the play:</b> the top
+1% of games hold 56% of Kaggle plays, 35% of McAuley's, 15% of 2026's. <i>Means:</i> recommending hits looks accurate by
+default, so MostPopular is a required baseline and long-tail recall is reported.</div></div>
+<div class="fig"><img src="figures/n4_label.png"><div class="cap"><b>The label works.</b> Across 94,876 unbiased 2026
+reviews, positive reviews rise from 50% (bottom playtime decile) to 88% (top), +38 points; Kaggle 66% to 91%, +25.
+Refunded games: 28.5% positive vs 76% overall. <i>Means:</i> playtime can label players who never review; reviews only
+check the label.</div></div>
+<div class="fig"><img src="figures/n5_release.png"><div class="cap"><b>Each source sees a different era.</b> McAuley
+plays center on 2012–2015 releases; Kaggle reviews stop in Oct 2023. Only 2026 libraries contain play of newer games.
+<i>Means:</i> models trained on older data may under-serve new releases (concern 2).</div></div>
+<div class="box"><b>Correlation check</b> (Spearman, 3.18M McAuley played rows). The label carries no game-level
+information; raw hours mostly encode which game it is.
+<table>
+<tr><th>Pair</th><th class="n">ρ</th></tr>
+<tr><td>Label vs game popularity / median playtime / price</td><td class="n">0.00</td></tr>
+<tr><td>Raw hours vs game median playtime</td><td class="n">0.57</td></tr>
+<tr><td>Raw hours vs game popularity</td><td class="n">0.35</td></tr>
+<tr><td>Label vs per-player percentile</td><td class="n">0.91</td></tr>
+<tr><td>Label vs two-week playtime</td><td class="n">0.13</td></tr>
+<tr><td>Game popularity vs % positive reviews</td><td class="n">0.39</td></tr>
+</table></div>
+</div></div>
+
+<div class="avoid"><h2>5. Variables we keep and drop</h2>
+<table>
+<tr><th>Variable</th><th>Decision</th><th>Evidence</th></tr>
+<tr><td>Within-game playtime percentile</td><td>Keep: the label</td><td>Removes game-level effects (ρ ≈ 0); 50% → 88% positive reviews (Fig 4)</td></tr>
+<tr><td>Raw playtime hours</td><td>Drop as a feature</td><td>Tracks game length and popularity, not enjoyment (ρ 0.57 / 0.35; Fig 1)</td></tr>
+<tr><td>Per-player habit adjustment</td><td>Drop</td><td>ρ 0.91 with the label; lost on 2026 players (0.659 vs 0.693)</td></tr>
+<tr><td>Review recency, two-week playtime</td><td>Drop</td><td>Recency looked strong (AUC 0.76) only through a sampling artifact (concern 3); two-week playtime ρ 0.13</td></tr>
+<tr><td>Genres; user tags</td><td>Keep genres; tags where present</td><td>Genres missing for 0.2% of games; tags missing for 66% (concern 5)</td></tr>
+<tr><td>Review votes and text; <code>price_regular</code></td><td>Validation and value metric only</td><td>Votes check the label; price is used only for value per dollar</td></tr>
+<tr><td>Zero-playtime rows</td><td>Neither hit nor miss</td><td>Unplayed can mean a gift, a bundle or not started yet</td></tr>
+</table></div>
+
+<h2>6. Data-quality and sampling concerns</h2>
+<ol>
+<li><b>Reviewers aren't typical players.</b> Kaggle holds only reviewed games, and our 2026 libraries come from
+reviewers too, so label validation describes reviewers; non-reviewers are untested.</li>
+<li><b>Era drift.</b> 2017 libraries are smaller and older (Figs 2, 5); 2026 players are reported separately.</li>
+<li><b>Our collection's sampling.</b> One page of recent and one of recent negative reviews per game; the negative page
+reaches further back, leaking review age into recency features. 2026 analyses use the unbiased page, one review per
+reviewer.</li>
+<li><b>Kaggle playtime</b> is measured at review time and capped at 1,000 h, so it understates lifetime play.</li>
+<li><b>Missing tags.</b> Our FronkonGames copy (from Hugging Face) has an empty tags column, so 66% of recommendable
+games lack tags (Kaggle's games: 11%). Genres fill in; a SteamSpy refill of tags is running
+(<code>collect/steamspy_refill.py</code>, about 24 h at SteamSpy's one-request-per-second limit).</li>
+<li><b>Prices.</b> After the G18 fix, 72,919 recommendable games still have only the October 2026 crawl price; the same
+SteamSpy refill supplies their regular price. The live tool uses current store prices.</li>
+<li><b>Unplayed games are ambiguous</b> (gift, bundle or not started), so they are excluded from hits and misses.</li>
+</ol>
+
+<h2>7. Reserved test data</h2>
+<p>Before any model comparison, players were split within each source by
+<code>sha256("steamrec-split-v1|source|player") mod 10</code>: 0 test, 1 validation, 2–9 train. For test and
+validation players, about 20% of played games are hidden by a second hash rule, so every model is scored on the same
+hidden games. Test players are excluded from all training and scored once (<code>eval/PROTOCOL.md</code>;
+<code>clean/reserve_test.py</code> refuses to run twice). 534 players examined in earlier checks (495 McAuley, 39 Steam
+2026) were moved from test to validation, so the 2026 test slice is 187 instead of 226.</p>
+<table class="avoid">
+<tr><th>Source</th><th class="n">Test players</th><th class="n">Test, 5+ visible games</th><th class="n">Validation players</th><th class="n">Validation, 5+ visible</th></tr>
+<tr><td>McAuley 2017</td><td class="n">6,265</td><td class="n">5,002</td><td class="n">7,377</td><td class="n">6,099</td></tr>
+<tr><td>Steam 2026</td><td class="n">187</td><td class="n">184</td><td class="n">308</td><td class="n">308</td></tr>
+<tr><td>Kaggle (secondary)</td><td class="n">1,368,763</td><td class="n">111,930</td><td class="n">1,367,004</td><td class="n">111,178</td></tr>
+</table>
+
+<h2>8. Preparation code and dashboard</h2>
+<p>In the repository: <code>clean/build_clean.py</code> → <code>clean/audit_clean.py</code> →
+<code>clean/data_dictionary.py</code> → <code>clean/reserve_test.py</code> → <code>eda/d2_figures.py</code>,
+<code>eda/note_figures.py</code> → <code>dashboard/load_supabase.py</code> (Supabase <code>public.eda_*</code>,
+public read-only) → <code>modal deploy dashboard/modal_app.py</code> (Streamlit on Modal). Data sources: McAuley Steam
+data (UCSD), Kaggle "Game Recommendations on Steam", FronkonGames "Steam Games Dataset", Steam Web API.</p>
+
+</body>
+</html>
