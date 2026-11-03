@@ -14,11 +14,28 @@ repo, tag, commit = (sys.argv[1:] + ["(link pending)", "d2-submission", "pending
 s = (HERE / "D2_Data_Note.src.html").read_text(encoding="utf-8")
 s = s.replace("{{REPO}}", repo).replace("{{REPO_SHORT}}", repo.replace("https://", "")).replace("{{TAG}}", tag).replace("{{COMMIT}}", commit)
 (HERE / "D2_Data_Note.html").write_text(s, encoding="utf-8")
+import shutil
 import tempfile
-with tempfile.TemporaryDirectory() as prof:            # own profile, so a running Edge window can't block it
-    subprocess.run([EDGE, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", f"--user-data-dir={prof}",
-                    "--no-first-run", f"--print-to-pdf={HERE / 'D2_Data_Note.pdf'}", (HERE / "D2_Data_Note.html").as_uri()],
-                   check=True, capture_output=True, timeout=90)
+CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+browser = CHROME if Path(CHROME).exists() else EDGE
+with tempfile.TemporaryDirectory() as tmp:             # own profile and output file, so nothing open can block it
+    out = Path(tmp) / "note.pdf"
+    import time
+    prof = Path(tempfile.gettempdir()) / "d2note_browser_profile"   # reused: a fresh profile's first run is slow
+    proc = subprocess.Popen([browser, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", f"--user-data-dir={prof}",
+                             "--no-first-run", f"--print-to-pdf={out}", (HERE / "D2_Data_Note.html").as_uri()],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    last, t0 = -1, time.time()                          # headless Chrome can linger after writing: wait for a stable file
+    while time.time() - t0 < 90:
+        time.sleep(1.5)
+        size = out.stat().st_size if out.exists() else -1
+        if size > 0 and size == last:
+            break
+        last = size
+    proc.kill(); proc.wait()
+    if not out.exists():
+        raise SystemExit("PDF was not written")
+    shutil.copyfile(out, HERE / "D2_Data_Note.pdf")
 subprocess.run(["pandoc", "D2_Data_Note.html", "-o", "D2_Data_Note.docx", "--resource-path=."], cwd=HERE, check=True)
 
 import pymupdf

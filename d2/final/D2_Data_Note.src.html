@@ -39,11 +39,11 @@ Dashboard: <a href="https://juanthom99--steamrec-d2-dashboard-run.us-east.modal.
 so "enjoyed" has to come from behavior: how long someone played a game compared with that game's other players. Three
 sources supply that behavior; a fourth supplies the game catalog.</p>
 <table>
-<tr><th>Source</th><th>What it holds</th><th class="n">Players</th><th class="n">Played rows*</th><th>Role</th></tr>
-<tr><td>McAuley Australian Steam (2017)</td><td>Full libraries, played and unplayed</td><td class="n">68k</td><td class="n">3.2M</td><td>Primary training source and 2017-era evaluation (players differ from today's, Fig 2)</td></tr>
-<tr><td>Steam 2026 (our collection)</td><td>Public full libraries of recent reviewers, via Steam's official API</td><td class="n">2.4k</td><td class="n">1.4M</td><td>Modern players: own test slice and label re-test</td></tr>
-<tr><td>Kaggle Steam reviews (to Oct 2023)</td><td>Reviewed games only; hours at review time</td><td class="n">13.7M</td><td class="n">40.4M</td><td>Extra training rows and label validation</td></tr>
-<tr><td>FronkonGames Steam Games (Oct 2026)</td><td>124,146 games: genres, descriptions, prices</td><td class="n">—</td><td class="n">—</td><td>Catalog: 72,919 of 111,167 recommendable games, incl. all 38,637 released 2024–2026</td></tr>
+<tr><th>Source</th><th>What it holds</th><th class="n">Players</th><th class="n">Played rows*</th><th class="n">Games</th><th>Role</th></tr>
+<tr><td>McAuley Australian Steam (2017)</td><td>Full libraries, played and unplayed</td><td class="n">68k</td><td class="n">3.2M</td><td class="n">9.6k</td><td>Primary training source and 2017-era evaluation (players differ from today's, Fig 2)</td></tr>
+<tr><td>Steam 2026 (our collection)</td><td>Public full libraries of recent reviewers, via Steam's official API</td><td class="n">2.4k</td><td class="n">1.4M</td><td class="n">47.7k</td><td>Modern players: own test slice and label re-test</td></tr>
+<tr><td>Kaggle Steam reviews (to Oct 2023)</td><td>Reviewed games only; hours at review time</td><td class="n">13.7M</td><td class="n">40.4M</td><td class="n">36.9k</td><td>Extra training rows and label validation</td></tr>
+<tr><td>FronkonGames Steam Games (Oct 2026)</td><td>Store data: genres, descriptions, prices, release dates</td><td colspan="2" style="text-align:center;color:#555">catalog only, no player data</td><td class="n">124.1k</td><td>Catalog: 72,919 of 111,167 recommendable games, incl. all 38,637 released 2024–2026</td></tr>
 </table>
 <p class="fn">*Playtime above zero, app counts as play history, bulk reviewers excluded: the filter every model trains on
 (Kaggle: 40.4M of 41.15M cleaned rows). The merged catalog has 137,725 apps; 111,167 are recommendable (released, on
@@ -76,7 +76,7 @@ rate, example and meaning. All tables join on <code>app_id</code>.</p>
 <tr><td><code>interactions_mcauley</code></td><td>Player × owned game</td><td class="n">5,094,082</td><td><code>playtime_min</code>, <code>playtime_2w_min</code>, <code>played</code> (False = unknown, not a dislike)</td></tr>
 <tr><td><code>games</code></td><td>Steam app (merged catalog)</td><td class="n">137,725</td><td><code>recommendable</code>, <code>history_ok</code>, <code>genres</code>, <code>tags</code>, <code>price_regular</code>, <code>price_source</code>, <code>adult</code></td></tr>
 <tr><td>Steam 2026 collection</td><td>Hashed player × library game; reviews</td><td class="n">2,696 libraries</td><td>playtime, achievements, review flag (no text)</td></tr>
-<tr><td><code>splits/</code></td><td>Player's split; hidden games</td><td class="n">—</td><td><code>split</code> (test / validation), SHA-256 checksums in <code>manifest.json</code></td></tr>
+<tr><td><code>splits/</code></td><td>Player's split; hidden games</td><td class="n">2,749,904 players</td><td><code>split</code> (test / validation), SHA-256 checksums in <code>manifest.json</code></td></tr>
 </table>
 
 <div class="avoid"><h2>4. What the data shows</h2>
