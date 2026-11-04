@@ -72,3 +72,13 @@ New players are always folded in from their visible history (the same path the l
    validation players only. Whichever hybrid has the higher validation NDCG@10 is "ours": it is compared against every
    other model in the statistics (Holm over 5 comparisons), and the "Try something new" row and Layer 3 are built from
    it. Both hybrids are reported on the test set. The test set is still scored once.
+4. **2026-11-03, after the first test run: a second, disclosed run with the completed catalog.** The first run
+   (2026-11-03, archived unchanged in `eval/run1/`) used a content side that covered only 38,248 of 111,167
+   recommendable games (Kaggle text, no 2024-2026 releases) and a catalog where 66% of recommendable games had no tags.
+   Run 2 changes only the content inputs: (a) SteamSpy tags fill the empty tags (cleaning rule G22) and regular prices
+   replace Oct 2026 crawl prices (G23); (b) every recommendable game is embedded from the cleaned catalog (title,
+   genres, tags, description; same gte-small model; `model/embed_catalog.py`). Splits, label, metrics, statistics,
+   the subsampling rule, tuning grids and the "Try something new" margin (20%) are unchanged. Models that do not use
+   content (MostPopular, item-kNN, EASE, ALS) see identical inputs, so their validation tuning is reused, not repeated;
+   both hybrids are retuned on validation only. The test set is then scored a second time. Both runs are reported;
+   run 1 stays the pre-registered result and run 2 is labelled as a follow-up that used the test set twice.

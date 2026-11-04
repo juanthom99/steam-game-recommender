@@ -8,6 +8,7 @@ Run: OPENBLAS_NUM_THREADS=4 PYTHONUTF8=1 C:/Users/juant/.venvs/steamrec-ml/Scrip
 Out: eval/eval_report.md, eval/cache/test_results.parquet (per player x model, with top-10 lists)
 """
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -23,8 +24,11 @@ from models import ALS, EASE, Hybrid, ItemKNN, MostPopular  # noqa: E402
 
 C = HERE / "cache"
 LOCK = C / "test_results.parquet"
+RUN2 = C / "run2.lock"   # PROTOCOL section 8, change 4: one disclosed second scoring, run 1 archived in eval/run1/
 if LOCK.exists():
-    raise SystemExit("The test set has already been scored once. Results: eval/eval_report.md")
+    if os.environ.get("STEAMREC_RUN2") != "1" or RUN2.exists() or not (HERE / "run1" / "cache" / "test_results.parquet").exists():
+        raise SystemExit("The test set has already been scored. Results: eval/eval_report.md")
+    RUN2.write_text("run 2 started\n")
 best = json.load(open(C / "best_params.json"))
 need = {"MostPopular", "item-kNN", "EASE", "ALS", "Hybrid", "Hybrid-EASE"}
 rows = [json.loads(l) for l in open(C / "tuning_rows.jsonl")]

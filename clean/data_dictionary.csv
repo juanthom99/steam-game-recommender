@@ -10,7 +10,7 @@ positive_ratio,double,29.8,71.0,% positive Steam reviews (Kaggle 2023),games.par
 user_reviews,double,1.6,0.0,Number of Steam reviews (Kaggle 2023),games.parquet
 steam_deck,bool,63.1,True,Steam Deck verified flag (Kaggle),games.parquet
 description,string,14.5,Experience the thrill of being a bus dri,"Short store description (Kaggle, else Fronkon, else Steam backfill)",games.parquet
-tags,list<element: string>,0.0,[],"Steam user tags, most-voted first (empty list for 66% of recommendable games: the FronkonGames copy has no tags)",games.parquet
+tags,list<element: string>,0.0,"['Adventure', 'JRPG', 'RPG']","Steam user tags, most-voted first (empty list for 66% of recommendable games: the FronkonGames copy has no tags)",games.parquet
 title_raw,string,0.0,LUNAR Remastered Collection,Title before cleaning (audit trail),games.parquet
 title_norm,string,0.0,lunar remastered collection,"Lower-case title without punctuation/edition words, for matching",games.parquet
 kaggle_price_regular,double,63.1,0.0,Regular USD price in Kaggle (2023),games.parquet
@@ -18,7 +18,7 @@ kaggle_price_final,double,63.1,0.0,"Price paid at Kaggle crawl time, after disco
 price_original_was_missing,bool,63.1,False,Kaggle listed regular price 0 on a paid game (rule G3),games.parquet
 kaggle_discount,double,63.1,0.0,Kaggle discount %,games.parquet
 description_source,string,0.0,fronkon,Where the description came from (kaggle / fronkon / steam / none),games.parquet
-n_tags,int64,0.0,0,Number of tags,games.parquet
+n_tags,int64,0.0,18,Number of tags,games.parquet
 steam_name,string,65.8,Bitburner,Name in Steam's app list,games.parquet
 steam_last_modified,timestamp[us],65.8,2026-09-15 16:25:45,Steam app list last-modified time,games.parquet
 item_type,string,0.0,game,"game, dlc, demo, tool, software, video, music, mod, episode, playtest, removed, unknown",games.parquet
@@ -47,7 +47,7 @@ achievements,double,9.9,0.0,Number of achievements,games.parquet
 adult,bool,0.0,False,Sexually explicit content (rule G17); excluded from recommendations,games.parquet
 mature_18,bool,0.0,False,Steam 18+ age gate (mostly violence); not filtered,games.parquet
 price_regular,double,1.6,0.0,Regular USD price: higher of Kaggle 2023 regular and Fronkon 2026 when both exist (rule G18); Fronkon-only games are re-priced from SteamSpy by clean/merge_steamspy.py,games.parquet
-price_source,string,0.0,fronkon_2026_only,kaggle_2023_higher / fronkon_2026 / fronkon_2026_only (not yet cross-checked) / kaggle_2023 / none,games.parquet
+price_source,string,0.0,steamspy_regular,kaggle_2023_higher / fronkon_2026 / fronkon_2026_only (not yet cross-checked) / kaggle_2023 / none,games.parquet
 desc_short,bool,0.0,False,Description under 40 characters,games.parquet
 desc_shared,bool,0.0,False,Description shared by several apps,games.parquet
 desc_non_english,bool,0.0,False,Description mostly non-Latin script,games.parquet

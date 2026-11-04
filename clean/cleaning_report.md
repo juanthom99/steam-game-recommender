@@ -110,3 +110,5 @@ Deliberately **not** done here (computed later on training data only, to avoid l
 ## Label status (Layer 1)
 
 Frozen 2026-10-28: a learned, player-relative enjoyment score (see label/label_config.json); it replaced the 2-hour floor. Within-game AUC 0.675 (Kaggle) / 0.608 (McAuley), matching the floor; within-user AUC 0.686 / 0.680 vs 0.657 / 0.655. No popularity or game-quality features. Research in `label/label_research.md`.
+| G22  | SteamSpy            | Games with no user tags given SteamSpy tags (most-voted first) | 46184 | filled | the FronkonGames copy has an empty tags column (data note, concern 5) |
+| G23  | SteamSpy            | Fronkon-only prices replaced by SteamSpy's regular price | 70151 | price_regular = initialprice / 100; price_source = steamspy_regular | the Oct 2026 crawl often caught sale prices (concern 6) |
