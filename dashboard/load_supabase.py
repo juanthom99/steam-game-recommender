@@ -78,10 +78,10 @@ cq = pd.DataFrame([
     {"field": "header_image", "pct_missing": miss(g.header_image.isna()), "note": "Card shows a blank image"},
     {"field": "release_date", "pct_missing": miss(g.release_date.isna()), "note": ""},
     {"field": "steamspy_median_playtime_min", "pct_missing": miss(g.steamspy_median_playtime_min.isna()), "note": "Unknown, not zero (rule F1)"},
-    {"field": "price_regular raised to the 2023 regular price (rule G18)", "pct_missing": miss(g.price_source == "kaggle_2023_higher"),
-     "note": "The Oct 2026 crawl was a sale price; fixed"},
-    {"field": "price_regular from the Oct 2026 crawl only, not yet cross-checked", "pct_missing": miss(g.price_source == "fronkon_2026_only"),
-     "note": "SteamSpy regular-price refill running (clean/merge_steamspy.py); live store price used at serving time"}])
+    {"field": "price_regular from Steam's regular price via IsThereAnyDeal (rule G24)", "pct_missing": miss(g.price_source == "itad_steam_regular"),
+     "note": "Share of games, not missing: the most accurate regular price; older sources are the fallback"},
+    {"field": "price_regular from the Oct 2026 crawl only, not cross-checked", "pct_missing": miss(g.price_source == "fronkon_2026_only"),
+     "note": "Not on Steam's store or IsThereAnyDeal; live store price used at serving time"}])
 put("eda_catalog_quality", cq)
 
 # ---- split counts

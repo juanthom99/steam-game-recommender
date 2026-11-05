@@ -3,8 +3,8 @@
 Used by model/recommend.py (command line) and app/server.py (local web page).
 - Enjoyment of each owned game = the player's playtime percentile among that game's players (stored quantiles).
 - The player's taste vector is solved from the trained ALS item factors (same equation as training).
-- "For you": top scores among recommendable, unowned games. "Try something new": high scores whose tags are new to
-  the player. Every pick names the owned games that pushed it up most.
+- "For you": top scores among recommendable, unowned games. "Try something new": the top 400 reranked by
+  z(score) + 4 x tag distance from the player's profile. Every pick names the owned games that pushed it up most.
 """
 import json
 import re
@@ -114,15 +114,16 @@ class Recommender:
         self.q = {int(a): np.asarray(q) for a, q in zip(it.app_id, it.q) if q is not None}
         g = pd.read_parquet(D / "games.parquet", columns=["app_id", "title", "tags", "genres", "price_regular", "recommendable",
                                                           "header_image", "release_date", "steam_positive", "steam_negative",
-                                                          "positive_ratio", "user_reviews", "adult", "kaggle_price_regular"])
+                                                          "positive_ratio", "user_reviews", "adult", "kaggle_price_regular", "price_source"])
         g = g.set_index("app_id")
         self.games = g
         pos, neg = g.steam_positive.fillna(0), g.steam_negative.fillna(0)
         n = pos + neg
         self.rating = ((pos / n.where(n > 0)).fillna(g.positive_ratio / 100)).reindex(self.app_ids).to_numpy()
         self.n_reviews = n.where(n > 0, g.user_reviews).reindex(self.app_ids).fillna(0).to_numpy()
-        # regular-price estimate for when the store can't be reached (price_regular can hold a sale price)
-        self.est_price = g[["price_regular", "kaggle_price_regular"]].max(axis=1).reindex(self.app_ids).to_numpy(float)
+        # regular-price estimate for when the store can't be reached: Steam regular price (G24), else the older sources
+        self.est_price = g.price_regular.where(g.price_source.eq("itad_steam_regular"),   # rule G24
+                                               g[["price_regular", "kaggle_price_regular"]].max(axis=1)).reindex(self.app_ids).to_numpy(float)
         rec = g.recommendable.reindex(self.app_ids).fillna(False).to_numpy(bool)
         # actionable picks only: on sale in the store, not adult, and not poorly rated
         self.candidate = rec & ~((self.rating < 0.65) & (self.n_reviews >= 50)) & (self.n_reviews >= 20)
@@ -218,26 +219,24 @@ class Recommender:
         tot = sum(prof.values()) or 1
         prof = {t: v / tot for t, v in prof.items()}
         top_tags = [t for t in sorted(prof, key=prof.get, reverse=True) if t.lower() not in NOT_NEW][:5] or sorted(prof, key=prof.get, reverse=True)[:5]
+        # soft rerank of the top 400: z(score) + 4 x tag distance (1 - cosine to the profile). Chosen post hoc on
+        # validation players (eval/diagnosis_report.md): 93% of For you's NDCG@10 with wider tags than the old filter.
         new = []
         if prof:
-            pool = order[n:400]
-            pmax = max(prof.values())
-            def novelty(j):
+            pool = [j for j in order[:400] if j not in set(top[:n])]          # never repeat a For you pick
+            norm = np.sqrt(sum(v * v for v in prof.values()))
+            def dist(j):
                 tg = self.tags.get(int(self.app_ids[j]), [])[:3]
-                return 1 - sum(prof.get(t, 0) for t in tg) / (pmax * len(tg)) if tg else 0
-            nov = np.array([novelty(j) for j in pool])
-            cut = np.quantile(nov, 0.7) if len(nov) else 1
-            seen = set()
-            for j, v in zip(pool, nov):
-                if v < cut:
-                    continue
-                fresh = [t for t in self.tags.get(int(self.app_ids[j]), [])[:3] if prof.get(t, 0) < 0.02 and t.lower() not in NOT_NEW]
-                if not fresh or (fresh[0] in seen and len(new) < n - 2):     # spread across different new tags
-                    continue
-                seen.add(fresh[0])
-                new.append((j, fresh[0]))
-                if len(new) == n + 5:
-                    break
+                return 1 - sum(prof.get(t, 0) for t in tg) / (np.sqrt(len(tg)) * norm) if tg else 0.0
+            if pool:
+                sc = np.array([s[j] for j in pool])
+                z = (sc - sc.mean()) / (sc.std() + 1e-9)
+                d = np.array([dist(j) for j in pool])
+                for k in np.argsort(-(z + 4.0 * d), kind="stable")[:n + 5]:
+                    j = pool[k]
+                    fresh = sorted((t for t in self.tags.get(int(self.app_ids[j]), [])[:3] if t.lower() not in NOT_NEW),
+                                   key=lambda t: prof.get(t, 0))
+                    new.append((j, fresh[0] if fresh and prof.get(fresh[0], 0) < 0.05 else None))
         need = [int(self.app_ids[j]) for j in top + [j for j, _ in new] if int(self.app_ids[j]) not in prices]
         prices.update(live_prices(need, cc))
         if prices:                                  # drop delisted / unbuyable games (only when the store answered)
@@ -246,7 +245,8 @@ class Recommender:
                 return lp is not None and (lp["final"] is not None or self.est_price[j] == 0)
             top = [j for j in top if buyable(j)]
             new = [(j, t) for j, t in new if buyable(j)]
-        top, new = top[:n], new[:n]
+        top = top[:n]
+        new = [(j, t) for j, t in new if j not in set(top)][:n]
         played = sorted(rows, key=lambda r: -r[3])
         return {"for_you": [self._card(j, s[j], rows, prices) for j in top],
                 "try_new": [self._card(j, s[j], rows, prices, {"new_tag": t}) for j, t in new], "top_tags": top_tags,

@@ -46,13 +46,14 @@ peak_ccu,double,9.9,0.0,Peak concurrent players (Fronkon),games.parquet
 achievements,double,9.9,0.0,Number of achievements,games.parquet
 adult,bool,0.0,False,Sexually explicit content (rule G17); excluded from recommendations,games.parquet
 mature_18,bool,0.0,False,Steam 18+ age gate (mostly violence); not filtered,games.parquet
-price_regular,double,1.6,0.0,Regular USD price: higher of Kaggle 2023 regular and Fronkon 2026 when both exist (rule G18); Fronkon-only games are re-priced from SteamSpy by clean/merge_steamspy.py,games.parquet
-price_source,string,0.0,steamspy_regular,kaggle_2023_higher / fronkon_2026 / fronkon_2026_only (not yet cross-checked) / kaggle_2023 / none,games.parquet
+price_regular,double,1.5,0.0,"Regular USD price: Steam's current regular price from IsThereAnyDeal when known (rule G24, clean/merge_itad.py); otherwise higher of Kaggle 2023 and Fronkon 2026 (G18) or SteamSpy (G23)",games.parquet
+price_source,string,0.0,itad_steam_regular,itad_steam_regular / steamspy_regular / kaggle_2023_higher / fronkon_2026 / fronkon_2026_only / kaggle_2023 / none,games.parquet
 desc_short,bool,0.0,False,Description under 40 characters,games.parquet
 desc_shared,bool,0.0,False,Description shared by several apps,games.parquet
 desc_non_english,bool,0.0,False,Description mostly non-Latin script,games.parquet
 history_ok,bool,0.0,True,Counts as play history (game/unknown/removed/mod/demo/episode),games.parquet
 recommendable,bool,0.0,True,"Candidate for recommendations: game, on sale, released, not adult, has store data",games.parquet
+price_regular_old,double,1.6,0.0,price_regular before rule G24 (kept for comparison),games.parquet
 source,string,0.0,mcauley,Always 'mcauley',interactions_mcauley.parquet
 user_key,int64,0.0,100053657,Integer player id (map in users_mcauley_map),interactions_mcauley.parquet
 app_id,int32,0.0,420,Steam app id,interactions_mcauley.parquet

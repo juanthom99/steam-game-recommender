@@ -55,9 +55,10 @@ TABLES = {
         "peak_ccu": "Peak concurrent players (Fronkon)", "achievements": "Number of achievements",
         "adult": "Sexually explicit content (rule G17); excluded from recommendations",
         "mature_18": "Steam 18+ age gate (mostly violence); not filtered",
-        "price_regular": "Regular USD price: higher of Kaggle 2023 regular and Fronkon 2026 when both exist (rule G18); "
-                         "Fronkon-only games are re-priced from SteamSpy by clean/merge_steamspy.py",
-        "price_source": "kaggle_2023_higher / fronkon_2026 / fronkon_2026_only (not yet cross-checked) / kaggle_2023 / none",
+        "price_regular": "Regular USD price: Steam's current regular price from IsThereAnyDeal when known (rule G24, "
+                         "clean/merge_itad.py); otherwise higher of Kaggle 2023 and Fronkon 2026 (G18) or SteamSpy (G23)",
+        "price_regular_old": "price_regular before rule G24 (kept for comparison)",
+        "price_source": "itad_steam_regular / steamspy_regular / kaggle_2023_higher / fronkon_2026 / fronkon_2026_only / kaggle_2023 / none",
         "desc_short": "Description under 40 characters", "desc_shared": "Description shared by several apps",
         "desc_non_english": "Description mostly non-Latin script",
         "history_ok": "Counts as play history (game/unknown/removed/mod/demo/episode)",
