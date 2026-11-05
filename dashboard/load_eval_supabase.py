@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 REPORTS = {"layer2": "eval/eval_report.md", "layer3": "eval/layer3_report.md", "layer3_prices": "eval/layer3_prices.md",
            "diagnosis": "eval/diagnosis_report.md", "diagnosis_value": "eval/diagnosis_value.md",
-           "layer2_run1": "eval/run1/eval_report.md", "layer3_run1": "eval/run1/layer3_report.md"}
+           "layer2_run1": "eval/run1/eval_report.md", "layer3_run1": "eval/run1/layer3_report.md", "team_comparison": "team_eval/results.md"}
 
 
 def num(s):
