@@ -69,6 +69,7 @@ def build_rows():
             "user_reviews": n, "popularity": float(np.log1p(n)),
             "price_regular": clean(None if pd.isna(price.iat[k]) else round(float(price.iat[k]), 2)),
             "price_source": r.price_source,
+            "explicit": bool(r.explicit), "content_level": r.content_level, "explicit_reason": r.explicit_reason,   # rule G25
             "embedding": "[" + ",".join(f"{x:.5f}" for x in E[k]) + "]"})
     return rows
 

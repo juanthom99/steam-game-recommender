@@ -54,6 +54,9 @@ desc_non_english,bool,0.0,False,Description mostly non-Latin script,games.parque
 history_ok,bool,0.0,True,Counts as play history (game/unknown/removed/mod/demo/episode),games.parquet
 recommendable,bool,0.0,True,"Candidate for recommendations: game, on sale, released, not adult, has store data",games.parquet
 price_regular_old,double,1.6,0.0,price_regular before rule G24 (kept for comparison),games.parquet
+explicit,bool,0.0,False,True when content_level is explicit (rule G25); hidden from recommendations unless the player opts in,games.parquet
+content_level,string,0.0,none,"explicit (sexual content is the point: Steam adult descriptor, Hentai/NSFW tag, or hentai in the title) / sexual_themes (Sexual Content or Nudity tag) / mature (Steam 18+ gate) / none (rule G25)",games.parquet
+explicit_reason,string,0.0,,"Signals that set content_level, e.g. tag:Hentai; title:hentai (rule G25)",games.parquet
 source,string,0.0,mcauley,Always 'mcauley',interactions_mcauley.parquet
 user_key,int64,0.0,100053657,Integer player id (map in users_mcauley_map),interactions_mcauley.parquet
 app_id,int32,0.0,420,Steam app id,interactions_mcauley.parquet

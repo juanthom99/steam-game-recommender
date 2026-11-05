@@ -114,7 +114,7 @@ class Recommender:
         self.q = {int(a): np.asarray(q) for a, q in zip(it.app_id, it.q) if q is not None}
         g = pd.read_parquet(D / "games.parquet", columns=["app_id", "title", "tags", "genres", "price_regular", "recommendable",
                                                           "header_image", "release_date", "steam_positive", "steam_negative",
-                                                          "positive_ratio", "user_reviews", "adult", "kaggle_price_regular", "price_source"])
+                                                          "positive_ratio", "user_reviews", "adult", "kaggle_price_regular", "price_source", "explicit", "content_level"])
         g = g.set_index("app_id")
         self.games = g
         pos, neg = g.steam_positive.fillna(0), g.steam_negative.fillna(0)
@@ -127,6 +127,8 @@ class Recommender:
         rec = g.recommendable.reindex(self.app_ids).fillna(False).to_numpy(bool)
         # actionable picks only: on sale in the store, not adult, and not poorly rated
         self.candidate = rec & ~((self.rating < 0.65) & (self.n_reviews >= 50)) & (self.n_reviews >= 20)
+        # sexually explicit games (rule G25): kept, but only shown when the player opts in
+        self.explicit = g.explicit.reindex(self.app_ids).fillna(False).to_numpy(bool)
         # user tags; ~11% of games have none in our sources, so fall back to store genres
         self.tags = {int(a): [x for x in (list(t) if t is not None and len(t) else list(ge) if ge is not None else [])
                               if x.lower() not in BROAD][:5] for a, t, ge in zip(g.index, g.tags, g.genres)}
@@ -182,11 +184,12 @@ class Recommender:
                 "rating": None if np.isnan(self.rating[j]) else round(float(self.rating[j]) * 100),
                 "reviews": int(self.n_reviews[j]),
                 "image": None if g is None or pd.isna(g.header_image) else g.header_image,
-                "store_url": f"https://store.steampowered.com/app/{a}/"}
+                "store_url": f"https://store.steampowered.com/app/{a}/",
+                "content_level": None if g is None else g.content_level}
         card.update(extra or {})
         return card
 
-    def recommend(self, library, owned=None, n=10, max_price=None, cc="us"):
+    def recommend(self, library, owned=None, n=10, max_price=None, cc="us", include_explicit=False):
         """library: (app_id, playtime_min) pairs; owned: every owned app_id (also excluded from picks).
         max_price is checked against the live store price (in the store currency for country cc)."""
         x, rows = self.taste(library)
@@ -194,6 +197,8 @@ class Recommender:
             return None
         s = self.Y @ x
         mask = self.candidate.copy()
+        if not include_explicit:
+            mask &= ~self.explicit
         for a in set(owned or []) | {a for a, _ in library}:
             i = self.idx.get(a)
             if i is not None:
@@ -268,7 +273,7 @@ def get():
     return Recommender()
 
 
-def for_profile(text, n=10, max_price=None):
+def for_profile(text, n=10, max_price=None, include_explicit=False):
     """Full pipeline for a Steam ID / link / name. Raises SteamError with a user-facing message."""
     sid = resolve_steamid(text)
     summary, lib = fetch_profile(sid)
@@ -281,18 +286,19 @@ def for_profile(text, n=10, max_price=None):
     if not played:
         raise SteamError(who + "It shows no playtime. In Privacy Settings, untick 'Always keep my total playtime private', "
                          "or pick a few favourite games below.")
-    out = get().recommend(played, owned=[a for a, _, _ in lib], n=n, max_price=max_price, cc=(summary["country"] or "us").lower())
+    out = get().recommend(played, owned=[a for a, _, _ in lib], n=n, max_price=max_price, cc=(summary["country"] or "us").lower(),
+                        include_explicit=include_explicit)
     if out is None:
         raise SteamError("None of the games on this profile are in our data yet. Pick a few favourite games instead.")
     out["player"] = {"name": summary["name"], "avatar": summary["avatar"]}
     return out
 
 
-def for_favorites(app_ids, n=10, max_price=None):
+def for_favorites(app_ids, n=10, max_price=None, include_explicit=False):
     """Fallback for private or empty profiles: treat each picked game as one the player loved."""
     r = get()
     lib = [(int(a), float(r.q[int(a)][90]) if int(a) in r.q else 6000) for a in app_ids]
-    out = r.recommend(lib, owned=[a for a, _ in lib], n=n, max_price=max_price)
+    out = r.recommend(lib, owned=[a for a, _ in lib], n=n, max_price=max_price, include_explicit=include_explicit)
     if out is None:
         raise SteamError("None of those games are in our data yet. Try more popular titles.")
     return out

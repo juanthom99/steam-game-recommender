@@ -81,7 +81,11 @@ cq = pd.DataFrame([
     {"field": "price_regular from Steam's regular price via IsThereAnyDeal (rule G24)", "pct_missing": miss(g.price_source == "itad_steam_regular"),
      "note": "Share of games, not missing: the most accurate regular price; older sources are the fallback"},
     {"field": "price_regular from the Oct 2026 crawl only, not cross-checked", "pct_missing": miss(g.price_source == "fronkon_2026_only"),
-     "note": "Not on Steam's store or IsThereAnyDeal; live store price used at serving time"}])
+     "note": "Not on Steam's store or IsThereAnyDeal; live store price used at serving time"},
+    {"field": "content_level = explicit (rule G25)", "pct_missing": miss(g.content_level == "explicit"),
+     "note": "Share of games, not missing. Sexual content is the point (Hentai/NSFW tag or title); hidden unless the player opts in"},
+    {"field": "content_level = sexual_themes (rule G25)", "pct_missing": miss(g.content_level == "sexual_themes"),
+     "note": "Share of games. Sexual Content or Nudity tag in a mainstream game; shown normally"}])
 put("eda_catalog_quality", cq)
 
 # ---- split counts

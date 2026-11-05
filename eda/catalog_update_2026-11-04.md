@@ -7,6 +7,7 @@ The D2 data note (`d2/DATA_NOTE.md`, submitted, tag `d2-final`) describes the ca
 | G22 | SteamSpy | 46,184 games with no user tags got SteamSpy's tags (most-voted first) |
 | G23 | SteamSpy | 70,151 crawl-only prices replaced by SteamSpy's regular price |
 | G24 | IsThereAnyDeal | 112,906 prices replaced by Steam's current regular price (snapshot 2026-11-04); 82 paid games that showed $0 fixed, 994 games that went free marked free |
+| G25 | Catalog | Content levels, flagged not removed: 1,154 recommendable games `explicit` (Hentai/NSFW tag or 'hentai' in the title; hidden unless the player opts in), 1,980 `sexual_themes` (Sexual Content or Nudity tag; shown), 121 `mature` (Steam 18+ gate; shown). Reason per game in `explicit_reason`. Tags are crowd-sourced, so an untagged explicit game is missed |
 
 ## Recommendable catalog, before and after
 

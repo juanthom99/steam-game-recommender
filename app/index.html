@@ -15,6 +15,7 @@ h1{font-size:28px;margin:0 0 4px}
 form{display:flex;gap:8px;flex-wrap:wrap}
 input{flex:1 1 260px;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
 input.price{flex:0 0 130px}
+.opt{display:block;margin:8px 0;font-size:14px;opacity:.8}
 button{padding:11px 18px;border:0;border-radius:8px;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;cursor:pointer}
 button.ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
 .hint{color:var(--muted);font-size:13px;margin-top:8px}
@@ -62,12 +63,14 @@ h2{font-size:19px;margin:28px 0 4px}
     <span class="hint">You sign in on Steam's own page. We never see your password, and nothing is saved. Your Steam game details need to be public.</span>
   </div>
   <div class="signedin" id="signedin" hidden><span id="who"></span> <a href="/logout">Sign out</a></div>
+  <label class="opt"><input type="checkbox" id="adult"> Show adult games (sexually explicit; off by default)</label>
   <div id="msg"></div>
   <div id="out"></div>
 </main>
 <script>
 const $ = s => document.querySelector(s), esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let favs = new Map();
+let favs = new Map(), last = null;
+const withOpts = url => url + (url.includes("?") ? "&" : "?") + ($("#adult").checked ? "adult=1" : "adult=0");
 function card(c){
   const pr = (c.price_text || "") + (c.discount ? ` (${c.discount}% off)` : "");
   const facts = [pr, c.rating != null ? c.rating + "% positive" : "", c.reviews ? c.reviews.toLocaleString() + " reviews" : ""].filter(Boolean).join(" · ");
@@ -84,9 +87,10 @@ function render(r){
     <h2>Try something new</h2><p class="rowsub">Players with your taste enjoyed these, but they're outside your usual tags.</p><div class="grid">${r.try_new.map(card).join("")}</div>`;
 }
 async function call(url){
+  last = url;
   $("#msg").innerHTML = `<div class="loading">Reading your library and finding games…</div>`; $("#out").innerHTML = "";
   try{
-    const res = await fetch(url), j = await res.json();
+    const res = await fetch(withOpts(url)), j = await res.json();
     if (!res.ok){ $("#msg").innerHTML = `<div class="err">${esc(j.error)}</div>`; favPicker(); return; }
     $("#msg").innerHTML = ""; render(j);
   }catch(e){ $("#msg").innerHTML = `<div class="err">Couldn't reach the server. Is app/server.py running?</div>`; }
@@ -95,7 +99,8 @@ function favPicker(){
   $("#out").innerHTML = `<div class="fav"><div class="title">Or pick 3–10 games you love</div>
     <input id="fs" placeholder="Search a game title" autocomplete="off"><ul class="results" id="fr"></ul>
     <div class="chips" id="fc"></div><button id="fgo" type="button">Recommend from these</button></div>`;
-  let t; $("#fs").oninput = e => { clearTimeout(t); t = setTimeout(async () => {
+  let t; $("#fs").oninput = e => { clearTimeout(t); t = setTimeout$("#adult").onchange = () => { if (last) call(last); };   // reload the current picks with the new setting
+(async () => {
     const r = await (await fetch("/api/search?q=" + encodeURIComponent(e.target.value))).json();
     $("#fr").innerHTML = r.map(g => `<li data-id="${g.app_id}">${esc(g.title)}</li>`).join(""); }, 200); };
   $("#fr").onclick = e => { const li = e.target.closest("li"); if (!li) return; favs.set(+li.dataset.id, li.textContent); chips(); };
@@ -104,10 +109,12 @@ function favPicker(){
 }
 function chips(){ $("#fc").innerHTML = [...favs].map(([id, n]) => `<span class="tag" data-id="${id}" title="Remove">${esc(n)} ✕</span>`).join("");
   $("#fc").onclick = e => { const c = e.target.closest(".tag"); if (c){ favs.delete(+c.dataset.id); chips(); } }; }
+$("#adult").onchange = () => { if (last) call(last); };   // reload the current picks with the new setting
 (async () => {                        // signed in through Steam? load their picks straight away
   if (location.hash === "#signin-failed") $("#msg").innerHTML = `<div class="err">Steam sign-in didn't complete. Try again, or paste your profile link.</div>`;
   try{
-    const res = await fetch("/api/me");
+    last = "/api/me";
+    const res = await fetch(withOpts("/api/me"));
     if (res.status === 401) return;
     $("#signin").hidden = true; $("#signedin").hidden = false;
     const j = await res.json();

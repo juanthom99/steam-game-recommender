@@ -80,6 +80,7 @@ class H(BaseHTTPRequestHandler):
         u = urlparse(self.path)
         q = {k: v[0] for k, v in parse_qs(u.query).items()}
         mp = float(q["max_price"]) if q.get("max_price") else None
+        ex = q.get("adult") == "1"            # "Show adult games": off unless the player ticks it
         try:
             if u.path == "/":
                 return self._send(200, PAGE, "text/html")
@@ -106,12 +107,12 @@ class H(BaseHTTPRequestHandler):
                 _, sid = self._session()
                 if not sid:
                     return self._send(401, {"error": "not signed in"})
-                return self._send(200, for_profile(sid, max_price=mp))
+                return self._send(200, for_profile(sid, max_price=mp, include_explicit=ex))
             if u.path == "/api/recommend":
-                return self._send(200, for_profile(q.get("q", ""), max_price=mp))
+                return self._send(200, for_profile(q.get("q", ""), max_price=mp, include_explicit=ex))
             if u.path == "/api/favorites":
                 ids = [int(x) for x in q.get("ids", "").split(",") if x.strip().isdigit()]
-                return self._send(200, for_favorites(ids, max_price=mp))
+                return self._send(200, for_favorites(ids, max_price=mp, include_explicit=ex))
             if u.path == "/api/search":
                 return self._send(200, get().search(q.get("q", "")))
             return self._send(404, {"error": "not found"})

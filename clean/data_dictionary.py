@@ -55,6 +55,9 @@ TABLES = {
         "peak_ccu": "Peak concurrent players (Fronkon)", "achievements": "Number of achievements",
         "adult": "Sexually explicit content (rule G17); excluded from recommendations",
         "mature_18": "Steam 18+ age gate (mostly violence); not filtered",
+        "explicit": "True when content_level is explicit (rule G25); hidden from recommendations unless the player opts in",
+        "content_level": "explicit (sexual content is the point: Steam adult descriptor, Hentai/NSFW tag, or hentai in the title) / sexual_themes (Sexual Content or Nudity tag) / mature (Steam 18+ gate) / none (rule G25)",
+        "explicit_reason": "Signals that set content_level, e.g. tag:Hentai; title:hentai (rule G25)",
         "price_regular": "Regular USD price: Steam's current regular price from IsThereAnyDeal when known (rule G24, "
                          "clean/merge_itad.py); otherwise higher of Kaggle 2023 and Fronkon 2026 (G18) or SteamSpy (G23)",
         "price_regular_old": "price_regular before rule G24 (kept for comparison)",
