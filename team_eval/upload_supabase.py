@@ -3,8 +3,9 @@
 Uploads every file in data_clean/team_eval/ plus evaluate.py, example_model.py and README.md from this folder.
 The bucket is private: teammates download from the Supabase dashboard (Storage > team-eval) or with a project key.
 Free plan: 50 MB per file, 1 GB total storage (separate from the 500 MB database).
-  PYTHONUTF8=1 C:/Users/juant/.venvs/steamrec-ml/Scripts/python team_eval/upload_supabase.py
+  PYTHONUTF8=1 C:/Users/juant/.venvs/steamrec-ml/Scripts/python team_eval/upload_supabase.py [file names...]
 """
+import sys
 import time
 from pathlib import Path
 
@@ -21,6 +22,8 @@ if BUCKET not in [b.name for b in sb.storage.list_buckets()]:
     sb.storage.create_bucket(BUCKET, options={"public": False})
     print(f"created private bucket {BUCKET}")
 files = sorted(DATA.glob("*.parquet")) + [HERE / n for n in ("evaluate.py", "example_model.py", "README.md", "results.md")]
+if sys.argv[1:]:                                         # upload only the named files
+    files = [f for f in files if f.name in sys.argv[1:]]
 too_big = [f.name for f in files if f.stat().st_size > 49 * 1024 * 1024]
 if too_big:
     raise SystemExit(f"over the 50 MB file limit: {too_big}")

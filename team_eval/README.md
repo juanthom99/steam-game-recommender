@@ -10,7 +10,7 @@ Use this to compare everyone's models on the same players, the same hidden games
 | `train_full_part01..09.parquet` | played game of a train player (read all parts and concatenate) | player_id, src, app_id, playtime_min, g |
 | `train_lite_part1..2.parquet` | same rows for fewer players | all McAuley and Steam 2026 train players, plus 10% of Kaggle train players. Use it if your laptop struggles with the full file. |
 | `validation.parquet` | owned game of a validation player | player_id, src, app_id, playtime_min, played, g, enjoyed, hidden_80_20, hidden_75_25, hidden_50_50 |
-| `recs_ease.parquet`, `recs_hybrid_ease.parquet`, `recs_mostpopular.parquet` | pick | our models' top-10 lists to compare against (EASE is our candidate) |
+| `recs_ease.parquet`, `recs_ease_safe.parquet`, `recs_hybrid_ease.parquet`, `recs_mostpopular.parquet` | pick | our models' top-10 lists to compare against (EASE is our candidate; EASE-safe adds a flag-aware re-rank) |
 | `results.md` | | our scores on all three holdouts |
 
 Column notes:
@@ -31,7 +31,7 @@ Column notes:
 4. Score your file next to ours:
 
 ```
-python evaluate.py --data <team_eval folder> recs_ease.parquet recs_hybrid_ease.parquet recs_mostpopular.parquet recs_yours.parquet --out results.md
+python evaluate.py --data <team_eval folder> recs_ease.parquet recs_ease_safe.parquet recs_mostpopular.parquet recs_yours.parquet --out results.md
 ```
 
 `example_model.py` is a working template with MostPopular in it. Replace the `MyModel` class with yours.
